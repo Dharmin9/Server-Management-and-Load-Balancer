@@ -1,0 +1,59 @@
+version: '3'
+services:
+    product-api-service:
+        container_name: product-api-service
+        build: ./product-api
+        volumes:
+            - ./product-api:/usr/src/app
+        ports:
+            - 8080:80
+    website:
+        image: php:apache
+        container_name: website
+        volumes:
+            - ./website:/var/www/html
+        ports:
+            - 8081:80
+        depends_on:
+            - product-api-service
+    website2:
+        image: php:apache
+        container_name: website2
+        volumes:
+            - ./website:/var/www/html
+        ports:
+            - 8082:80
+        depends_on:
+            - product-api-service
+    website3:
+        image: php:apache
+        container_name: website3
+        volumes:
+            - ./website:/var/www/html
+        ports:
+            - 8083:80
+        depends_on:
+            - product-api-service
+    db-mysql:
+        image: mysql
+        container_name: db-mysql
+        expose:
+            - 3306
+        environment:
+            MYSQL_ROOT_PASSWORD: root
+        volumes:
+            - ./database:/docker-entrypoint-initdb.d/:ro
+    haproxy:
+        build: ./haproxy
+        volumes:
+            - ./haproxy:/haproxy
+        links:
+            - product-api-service
+            - website
+            - db-mysql
+        ports:
+            - "8050:80"
+            - "3306:3306"
+        expose:
+            - "80"
+            - "3306"
